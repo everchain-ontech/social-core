@@ -168,6 +168,7 @@ class FacebookOAuth2(BaseOAuth2):
 class FacebookAppOAuth2(FacebookOAuth2):
     """Facebook Application Authentication support"""
     name = 'facebook-app'
+    ID_KEY = 'id'
 
     def uses_redirect(self):
         return False
