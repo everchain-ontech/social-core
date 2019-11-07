@@ -2,6 +2,7 @@
     PAIPASS Oauth2 backend
 """
 from .oauth import BaseOAuth2
+from ..utils import handle_http_errors
 from ..exceptions import AuthCanceled, AuthUnknownError
 
 
@@ -10,7 +11,7 @@ class PaipassOAuth2(BaseOAuth2):
     name = "paipass"
     ID_KEY = "email"
     REDIRECT_STATE = False
-    RESPONSE_TYPE = None
+    STATE_PARAMETER = False
     ACCESS_TOKEN_METHOD = "POST"
     SCOPE_SEPARATOR = r" "
     AUTHORIZATION_URL = "https://api.demo.p19dev.com/oauth/authorize"
@@ -29,34 +30,24 @@ class PaipassOAuth2(BaseOAuth2):
     def user_data(self, access_token, *args, **kwargs):
         """Loads user data from service"""
         params = self.setting("PROFILE_EXTRA_PARAMS", {})
+        response = kwargs.get('response') or {}
         params["access_token"] = access_token
-        return self.get_json(self.USER_DATA_URL, params=params)
+        headers = {
+            "Authorization": "%s %s" % (
+                response.get("token_type", "Bearer").capitalize(),
+                access_token),
+            "Accept": 'application/json',
+            "Content-type": 'application/json;charset=utf-8'}
+        return self.get_json(self.USER_DATA_URL,
+                             params=params, headers=headers)
 
-    def process_error(self, data):
-        super(PaipassOAuth2, self).process_error(data)
-        if data.get("error_code"):
-            raise AuthCanceled(self, data.get("error_message") or
-                               data.get("error_code"))
-
-    def do_auth(self, access_token, response=None, *args, **kwargs):
-        response = response or {}
-
-        data = self.user_data(access_token)
-
-        if not isinstance(data, dict):
-            raise AuthUnknownError(self, "An error ocurred while retrieving "
-                                         "users Facebook data")
-
-        data["access_token"] = access_token
-        if "expires_in" in response:
-            data["expires"] = response["expires_in"]
-
-        if self.data.get("granted_scopes"):
-            data["granted_scopes"] = self.data["granted_scopes"].split(",")
-
-        if self.data.get("denied_scopes"):
-            data["denied_scopes"] = self.data["denied_scopes"].split(",")
-
-        kwargs.update({"backend": self, "response": data})
+    @handle_http_errors
+    def do_auth(self, access_token, *args, **kwargs):
+        """Finish the auth process once the access_token was retrieved"""
+        data = self.user_data(access_token, *args, **kwargs)
+        response = kwargs.get('response') or {}
+        response.update(data or {})
+        if 'access_token' not in response:
+            response['access_token'] = access_token
+        kwargs.update({'response': response, 'backend': self})
         return self.strategy.authenticate(*args, **kwargs)
-
