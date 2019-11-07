@@ -325,6 +325,7 @@ class BaseOAuth2(OAuthAuth):
         }
         if self.STATE_PARAMETER and state:
             params['state'] = state
+
         if self.RESPONSE_TYPE:
             params['response_type'] = self.RESPONSE_TYPE
         return params
