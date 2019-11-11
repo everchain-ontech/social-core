@@ -3,7 +3,7 @@
 """
 import re
 from .oauth import BaseOAuth2
-from ..utils import handle_http_errors
+from ..utils import handle_http_errors, url_add_parameters
 from ..exceptions import AuthCanceled, AuthUnknownError
 
 
@@ -47,6 +47,14 @@ class PaipassOAuth2(BaseOAuth2):
         regex = re.compile(r"\:(80|443)\/")
         params["redirect_uri"] = regex.sub("/", params["redirect_uri"])
         return params
+
+    def get_redirect_uri(self, state=None):
+        """Build redirect with redirect_state parameter."""
+        regex = re.compile(r"\:(80|443)\/")
+        uri = regex.sub("/", self.redirect_uri)
+        if self.REDIRECT_STATE and state:
+            uri = url_add_parameters(uri, {'redirect_state': state})
+        return uri
 
     @handle_http_errors
     def do_auth(self, access_token, *args, **kwargs):
