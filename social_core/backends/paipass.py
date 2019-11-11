@@ -43,7 +43,7 @@ class PaipassOAuth2(BaseOAuth2):
                              params=params, headers=headers)
 
     def auth_params(self, state=None):
-        params = super(PaipassOAuth2, self).auth_params(self, state)
+        params = super(PaipassOAuth2, self).auth_params(state)
         regex = re.compile(r"\:(80|443)\/")
         params["redirect_uri"] = regex.sub("/", params["redirect_uri"])
         return params
