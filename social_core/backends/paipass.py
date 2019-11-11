@@ -1,6 +1,7 @@
 """
     PAIPASS Oauth2 backend
 """
+import re
 from .oauth import BaseOAuth2
 from ..utils import handle_http_errors
 from ..exceptions import AuthCanceled, AuthUnknownError
@@ -40,6 +41,12 @@ class PaipassOAuth2(BaseOAuth2):
             "Content-type": 'application/json;charset=utf-8'}
         return self.get_json(self.USER_DATA_URL,
                              params=params, headers=headers)
+
+    def auth_params(self, state=None):
+        params = super(PaipassOAuth2, self).auth_params(self, state)
+        regex = re.compile(r"\:(80|443)\/")
+        params["redirect_uri"] = regex.sub("/", params["redirect_uri"])
+        return params
 
     @handle_http_errors
     def do_auth(self, access_token, *args, **kwargs):
