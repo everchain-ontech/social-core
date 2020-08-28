@@ -14,7 +14,7 @@ class WeixinOAuth2(BaseOAuth2):
     """Weixin OAuth authentication backend"""
     name = 'weixin'
     ID_KEY = 'openid'
-    AUTHORIZATION_URL = 'https://open.weixin.qq.com/connect/oauth2/authorize'
+    AUTHORIZATION_URL = 'https://open.weixin.qq.com/connect/qrconnect'
     ACCESS_TOKEN_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token'
     ACCESS_TOKEN_METHOD = 'POST'
     DEFAULT_SCOPE = ['snsapi_login']
@@ -176,3 +176,12 @@ class WeixinOAuth2APP(WeixinOAuth2):
         self.process_error(response)
         return self.do_auth(response['access_token'], response=response,
                             *args, **kwargs)
+
+
+class WeixinOAuth2H5(WeixinOAuth2APP):
+    """
+    Weixin OAuth authentication backend
+
+    Can't use in web, only in weixin app h5
+    """
+    name = 'weixinh5'

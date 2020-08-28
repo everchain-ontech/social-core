@@ -1,3 +1,4 @@
+import re
 import six
 
 from requests_oauthlib import OAuth1
@@ -95,7 +96,8 @@ class OAuthAuth(BaseAuth):
 
     def get_redirect_uri(self, state=None):
         """Build redirect with redirect_state parameter."""
-        uri = self.redirect_uri
+        regex = re.compile(r"\:(80|443)\/")
+        uri = regex.sub("/", self.redirect_uri)
         if self.REDIRECT_STATE and state:
             uri = url_add_parameters(uri, {'redirect_state': state})
         return uri
