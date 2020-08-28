@@ -178,10 +178,10 @@ class WeixinOAuth2APP(WeixinOAuth2):
                             *args, **kwargs)
 
 
-class WeixinOAuth2H5(WeixinOAuth2APP):
+class WeixinOAuth2WeixinPublic(WeixinOAuth2APP):
     """
     Weixin OAuth authentication backend
 
     Can't use in web, only in weixin app h5
     """
-    name = 'weixinh5'
+    name = 'weixinpublic'
